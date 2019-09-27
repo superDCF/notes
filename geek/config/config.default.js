@@ -13,15 +13,7 @@ module.exports = appInfo => {
     const config = {};
     config.security = {
         csrf: false,
-    };
-    config.cluster = {
-        listen: {
-            path: '',
-            port: 7001,
-            // hostname: 'geekbang.org',
-        }
-    };
-
+    }
 
     // use for cookie sign key, should change to your own and keep security
     config.keys = appInfo.name + '_1554791649832_867';
@@ -37,16 +29,19 @@ module.exports = appInfo => {
         publicPath: path.join(appInfo.baseDir, 'app/view/index.html'),
         devServer: {
             debug: true,
+            command: 'umi dev',
             port: 8000,
             env: {
+                APP_ROOT: process.cwd() + '/app/assets',
                 BROWSER: 'none',
                 ESLINT: 'none',
-                SOCKET_SERVER: 'http://geekbang.org:8000',
-                PUBLIC_PATH: 'http://geekbang.org:8000',
+                SOCKET_SERVER: 'http://127.0.0.1:8000',
+                PUBLIC_PATH: 'http://127.0.0.1:8000',
             },
         },
     }
     const view = {
+        // root: path.join(appInfo.baseDir, 'app/assets'),
         defaultViewEngine: 'nunjucks',
         mapping: {
             '.html': 'nunjucks',

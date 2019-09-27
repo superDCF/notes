@@ -6,8 +6,8 @@ puppeteer.launch({
     headless: false,
     devtools: true,
     defaultViewport: {
-        width: 1300,
-        height: 800
+        width: 1800,
+        height: 900
     }
 }).then(async browser => {
     const page = await browser.newPage();
@@ -20,8 +20,8 @@ puppeteer.launch({
     await sleep(2)
     // var cur_cookie = await page.cookies()
     // console.log(cur_cookie)
-    await sleep(5)
-    await page.click("a.ment-link:nth-child(6)")
+    await sleep(8)
+    await page.click(".left-nav > a:nth-child(6)")
     await sleep(8)
     // data_list
     page.on('requestfinished', async require => {
@@ -31,7 +31,23 @@ puppeteer.launch({
             console.log("err", error)
         }
     })
-    await page.click(".btn-wrapper")
+    // await page.click(".btn-wrapper")
+    const link = await page.$(".btn-wrapper")
+    await link.click()
+    // const newPage = await browser.waitForTarget(target => target.url() === link.textContent());
+    // console.log(newPage)
+    await sleep(8)
+    allPages = await browser.pages()
+    for (let cpage of allPages) {
+        console.log(cpage.url())   // new page now appear!
+        if (cpage.url().indexOf("column")>-1) {
+            cpage.pdf({
+                path: "./test.pdf",
+                displayHeaderFooter: true,
+                printBackground: true
+            })
+        }
+    }
 });
 
 async function inputNamePW(page, account, browser) {
