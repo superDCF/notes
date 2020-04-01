@@ -5,7 +5,7 @@ const options = {
     method: 'POST',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie: 'acw_tc=781bad2915777969207416453e2753719c55505eababa2b21b0f57fa7353bd; JSESSIONID=849A09CF2959447A1F65AC69D020D896; Identify=50CC210C5A871323FB1C7ACC1089376114762544E8D8045FFA09276E3F97CBAE0705ADEF0B7B7AD0; Mcc=867C079FB7E368FA7CB0BCD31B48A3E7',
+        Cookie: 'acw_tc=781bad2815833236511914467e20d3f2881e2650cd8d0828893eb57ddcb6f9; JSESSIONID=CC07E1331F4FB7D32324D19081CE437D; Mcc=671AF6E631C551B77CB0BCD31B48A3E7; Identify=DAD97D9B92783535AEA4CC11E3FF1FB520D0F4E9942DD98600525EDCC42CCBAE3230A38E1626259D',
         Host: 'crm.soqi.cn',
         Referer: 'http://crm.soqi.cn/baibao/index.html',
         'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1'
@@ -25,7 +25,7 @@ const newSrc =  "http://crm.soqi.cn/publicOcean/mpOceanLock.xhtml"
 // 
 // 
 function postUid(uid) {
-    const req = http.request(notPay, options, (res) => {
+    const req = http.request(newSrc, options, (res) => {
         console.log(`状态码: ${res.statusCode}`);
         console.log(`响应头: ${JSON.stringify(res.headers)}`);
         res.setEncoding('utf8');
@@ -42,7 +42,7 @@ function postUid(uid) {
     });
     //mpId
     // recordId
-    req.write(`recordId=${uid}&type=1`);
+    req.write(`mpId=${uid}&type=1`);
     req.end();
 }
 
