@@ -1,2 +1,2 @@
-# notes
-This is a privite rep
+# blogs
+My  learning blogs
