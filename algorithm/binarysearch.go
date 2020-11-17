@@ -20,8 +20,9 @@ func main() {
 	log.Println(i4)
 }
 
-/* 
-2^k = n
+/*
+n/2 * n/2^2 * n/2^3 .... n/2^k
+n/2^k = 1
 O(logn)
 */
 
@@ -29,11 +30,8 @@ func BinarySearch(arr []int, target int) (index int) {
 	arrLen := len(arr)
 	left := 0
 	right := arrLen - 1
-	for left <= right && left <= arrLen-1 && right <= arrLen-1 {
+	for left <= right {
 		index = (left + right) >> 1
-		if right == left+1 {
-			return -1
-		}
 		if target == arr[index] {
 			return index
 		} else if target > arr[index] {
