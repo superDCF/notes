@@ -8,6 +8,10 @@ import "log"
 2. 把大于pivot的元素放在数组的右边，把小于pivot的元素放在数组的左边
 3. 递归处理由pivot分割的左右子数组，直到子数组的长度为1
 
+最好时间复杂度：O（nlogn）
+最差时间复杂度：O（n^2）
+空间复杂度：O（logn）
+
 phony:
 	QuickSort(a){
 		m := povit(a)
