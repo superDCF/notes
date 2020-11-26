@@ -1,6 +1,8 @@
 package main
 
-import "log"
+import (
+	"log"
+)
 
 /*
 快速排序原理：
@@ -13,6 +15,29 @@ import "log"
 空间复杂度：最好：O（logn），最差：O（n）
 稳定性：不稳定
 
+优化：
+1、单边递归调用
+	减少函数的调用，复用之前的调用循环
+
+void quick_sort(int *arr, int l, int r) {
+    while (l < r) {
+        // 进行一轮 partition 操作
+        // 获得基准值的位置
+        int ind = partition(arr, l, r);
+        // 右侧正常调用递归函数
+        quick_sort(arr, ind + 1, r);
+        // 用本层处理左侧的排序
+        r = ind - 1;
+    }
+    return ;
+}
+
+2、三点取中法
+	选取基准点时，取分区的头尾中三个点的元素，以中间值作基准点。一般排序算法都是快排，使用此优化。
+
+3、partition
+	头尾指针分别找到需要交换的元素，直接交换该元素，而不是找到一个元素就交换；
+	
 phony:
 	QuickSort(a){
 		m := povit(a)
