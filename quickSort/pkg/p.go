@@ -10,7 +10,8 @@ import "log"
 
 最好时间复杂度：O（nlogn）
 最差时间复杂度：O（n^2）
-空间复杂度：O（logn）
+空间复杂度：最好：O（logn），最差：O（n）
+稳定性：不稳定
 
 phony:
 	QuickSort(a){
