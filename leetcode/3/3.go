@@ -17,23 +17,23 @@ func lengthOfLongestSubstring(s string) int {
 	if len(s) == 0 {
 		return 0
 	}
-	var m = map[byte]struct{}{} // 复用，存储每段不重复字符串的字符
+	var m = map[byte]int{} // 复用，存储每段不重复字符串的字符
 	start := 0
 	index := map[int]int{} // 用来存储不重复字符串的开始位置，和长度，map[长度]开始位置
-	m[s[0]] = struct{}{}
+	m[s[0]] = 0
 	for i := 1; i < len(s); i++ {
 		log.Println(start, i, m, index)
 		if s[i-1] != s[i] {
-			if _, ok := m[s[i]]; ok { // 判断是否重复
+			if k, ok := m[s[i]]; ok { // 判断是否重复
 				index[i-start] = start
-				start = i
-				m = map[byte]struct{}{}
+				start = k
+				m[s[i]] = i
 			} else {
 				if start == i-1 {
 					start = i - 1
 				}
-				m[s[i]] = struct{}{}
-				if i == len(s) - 1 {
+				m[s[i]] = i
+				if i == len(s) - 1 { // 保证最后一个加入
 					index[i-start+1] = start
 				}
 			}
