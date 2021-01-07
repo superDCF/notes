@@ -3,7 +3,7 @@ function singleNumbers(nums) {
     nums.forEach(e => {
         k ^= e
     })
-    console.log("k", k)
+    console.log("k", k) // 公异数
     mask = 1
 
     while ((k & mask) == 0) {
