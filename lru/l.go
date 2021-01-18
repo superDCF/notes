@@ -51,7 +51,7 @@ func NewLru(n int) *Lru {
 	l := &Lru{
 		Len:  n,
 		list: new(DoubleList),
-		hash: make(map[string]*Node),
+		hash: make(map[string]*Node, n),
 	}
 	return l
 }
