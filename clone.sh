@@ -1,7 +1,6 @@
 #!/bin/bash
 ## login gitlab cookie
-set -e
-set -u
+set -Eeuxo pipefail
 
 page=1
 count=0
