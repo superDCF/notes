@@ -1,6 +1,8 @@
 #!/bin/bash
 ## login gitlab cookie
-# set -e
+set -e
+set -u
+
 page=1
 count=0
 gitlab=$2 # gitlab domain ex:code.hellotalk.com
