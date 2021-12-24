@@ -1,9 +1,14 @@
-# Replace ziplist with listpack in quicklist
+# Redis替换ziplist
+Replace ziplist with listpack in quicklist
 
-导语——最近看到redis的官方消息，用listpack替换ziplist，迭代了多个版本的listpack终于登场了（当前最新6.2.6版本，仍未替换，只在unstable分支出现，预计下个版本发布）。恐怕有同学还不了解listpack有什么提升的地方，本篇将结合图片+源码的方式，图解listpack。
+导语：最近看到redis的官方消息，用listpack替换ziplist，迭代了多个版本的listpack终于登场了（当前最新6.2.6版本，仍未替换，只在unstable分支出现，预计很快发布）。恐怕有同学还不了解listpack有什么提升的地方，本篇将结合图片+源码的方式，走进quicklist、listpack。
+
+## 特别声明：
+以下阅读，都是基于unstable分支，commit:https://github.com/redis/redis/commit/4512905961b3a2f4c00e5fe7ffff8d96db82861e
+该分支还处于迭代开发中，但是**Replace ziplist with listpack in quicklist**中的quicklist、listpack等替换ziplist操作基本上已成事实。
 
 ## 为什么要替换ziplist？
-ziplist最大特点就是，是一种内存紧凑型的数据结构，占用一块连续的内存，针对不同长度类型的数据，进行不同的编码。既可以利用CPU缓存，也非常节省内存。
+ziplist在3.2版本之前，是list、hash、zset三种数据类型的底层使用的数据结构之一。ziplist最大特点就是，是一种内存紧凑型的数据结构，占用一块连续的内存，针对不同长度类型的数据，进行不同的编码。既可以利用CPU缓存，也非常节省内存。
 当然这种连续性的内存结构，在元素大小变化、删除、增加，也有着通用的毛病。
 
 ziplist结构布局如下：
@@ -23,15 +28,15 @@ prevlen：前一个entry的长度，如果这个长度小于254字节，只占�
 encoding：该字段表示entry的数据类型以及数据长度，当是整形时，只占用1字节，字节的前2 bit都是1，例如【11xxxxxx】，后几个bit位表示不同的entry数据类型。当是字符串时，根据字符串的长度不同，分别占用1、2、5字节，同样多余的bit位，表示不同的数据长度。（多说一句，redis有很多这种可变数据编码的思想，在一定程度上节省内存）
 ```
 
-**由于prevlen字段表示前一个元素的长度，当新增元素、元素变大超过现有值类型，例如增加一个大于254字节的元素，而之前存储的是小于254字节的entry，这时就会改变当前这个prevlen的值，可能出现更严重的是，会顺序性的对后面的entry的prevlen都需要修改，这会直接影响到压缩列表的操作性能，不过这种出现的概率很低。
-更主要的原因是因为增加、删除、变大都需要移动后续的元素，所以压缩列表只适用于保存节点不多的情况，在3.2之前使用ziplist的数据类型有，list、hash、zset，他们分别是通过list_max_ziplist_value、hash_max_ziplist_entries、zset_max_ziplist_value设置当数据量小于多少时使用ziplist数据结构，默认值都是64。**
+**由于prevlen字段表示前一个元素的长度，当新增元素、元素变大超过现有值类型，例如增加一个大于254字节的元素，而之前存储的是小于254字节的entry，这时就会改变当前这个prevlen的值，可能出现更严重的是，会顺序性的对后面的entry的prevlen都需要修改，这会直接影响到压缩列表的操作性能，不过这种出现的概率很低。**
+
+压缩列表只适用于保存节点不多的情况，在3.2之前使用ziplist的数据类型有，list、hash、zset，他们分别是通过list_max_ziplist_value、hash_max_ziplist_entries、zset_max_ziplist_value设置当数据量小于多少时使用ziplist数据结构，默认值都是64。
 
 了解了ziplist的设计和使用的取舍，在redis 3.2版本使用quicklist替换redis List类型的底层数据结构ziplist[1]。
 
-ziplist数据结构在3.2版本之前，作为list类型底层数据结构之一，3.2版本之后[1]，被替换成quicklist。
-
 ## quicklist是什么
 
+当前未发布的最新版本，阅读源码可知，quicklist其实就是由双向链表+listpack构成。新数据的插入或者变大，把之前的ziplist替换成多个lsitpack，来减少影响。
 ```
 typedef struct quicklist {
     quicklistNode *head; // 头节点指针
@@ -68,20 +73,145 @@ typedef struct quicklistEntry {
 } quicklistEntry;
 ```
 上面三个数据结构就是基本的quicklist数据结构。可以看到quicklist底层也是借助于listpack。
-在想quicklist添加一个元素的时候，不会像普通链表那样，直接在某个偏移位置新增节点。而是会检查插入位置的listpack能否容纳新的元素，如果没超过fill设定限制，就会直接插入，否者会创建一个新的quicklistNode。
+[![quicklist结构图](https://s4.ax1x.com/2021/12/24/TYlp5V.png)](https://imgtu.com/i/TYlp5V)
+在向quicklist添加一个元素的时候，不会像普通链表那样，直接在某个偏移位置新增节点。而是会检查插入位置的listpack能否容纳新的元素，如果没超过fill设定限制，就会直接插入，否者会创建一个新的quicklistNode。
+ 
+## listpack是什么[2]
+listpack继承了ziplist内存紧凑的设计，重新设计了标头和单个元素数据结构。结构示意如下：
+```
+<tot-bytes> <num-elements> <element-1> ... <element-N> <listpack-end-byte>
+```
+1. tot-bytes: uint32_t，表示包含listpack总字节数，total bytes.
+2. num-elements: uint16_t，表示listpack包含的元素数量
+3. listpack-end-byte：固定值，和ziplist一样都是255。终止符的主要优点是能够在不保存（并在每次迭代时比较）listpack末尾地址的情况下扫描listpack，并且可以轻松识别listpack是否格式正确或被截断。
 
-## listpack是什么
+元素示意结构：
+```
+<encoding-type><element-data><element-tot-len>
+|                                            |
++--------------------------------------------+
+            (This is an element)
+```
+1. encoding-type:编码类型，前面说过，redis有很多使用不同的编码记录不同类型数据。具体的编码规则，见参考资料2。
+2. element-data：元素数据本身，如整数，或者字符串的字节数组。
+3. element-tot-len：元素总长度，便于从后往前遍历。
+
+**对比ziplist发现，在元素结构，listpack少了`prevlen`，之前说过正是由于该字段的存在，可能会有连锁迁移内存的风险，而在listpack，使用`element-tot-len`表达自身长度，所以新增或者是改变元素，对下一位元素的大小是没有影响的。**
 
 ## list insert源码解读
-下面以一个list insert操作为列，窜起quicklist、packlist
+下面以一个list insert操作为列，串起quicklist、packlist。由于源码很长，本篇只摘重要代码解读。
 ```
+// t_list.c
+// List的push操作，最终会到listTypeInsert，中间有很多不必要的代码，省略。
+// entry是listpack中的，要插入value的参考位置，where表示是在entry之前还是之后插入
+void listTypeInsert(listTypeEntry *entry, robj *value, int where) {
+    if (entry->li->encoding == OBJ_ENCODING_QUICKLIST) { // 这里显示，底层数据结构唯一使用quicklist，注意，listpack是quicklist的底层实现的一部分。
+        value = getDecodedObject(value); // 获取解码的对象，符合redisObject。
+        sds str = value->ptr;
+        size_t len = sdslen(str);
+        if (where == LIST_TAIL) {
+            quicklistInsertAfter(entry->li->iter, &entry->entry, str, len);
+        } else if (where == LIST_HEAD) {
+            quicklistInsertBefore(entry->li->iter, &entry->entry, str, len);
+        }
+        decrRefCount(value); // 解引用，释放内存
+    } else {
+        serverPanic("Unknown list encoding");
+    }
+}
 
+//quicklist.c
+// iter表示是哪个quicklist，
+/*
+quicklistIter该对象在遍历时复制一份使用
+typedef struct quicklistIter {
+    quicklist *quicklist; //标示所属quicklist
+    quicklistNode *current; // 当前在哪个节点
+    unsigned char *zi; //操作的基准entry
+    long offset; /* offset in current listpack */
+    int direction; // 什么操作
+} quicklistIter;
+*/
+// iter参数如上结构，entry是基准方位，用来定位值插入after的位置
+// value即要插入的值，
+// sz表示插入值的大小，
+// after表示在前还是在后插入
+REDIS_STATIC void _quicklistInsert(quicklistIter *iter, quicklistEntry *entry,
+                                   void *value, const size_t sz, int after)
+{
+    quicklist *quicklist = iter->quicklist;
+    int full = 0, at_tail = 0, at_head = 0, avail_next = 0, avail_prev = 0;
+    int fill = quicklist->fill;
+    quicklistNode *node = entry->node;
+    quicklistNode *new_node = NULL;
+
+    if (!node) {
+        /* we have no reference node, so let's create only node in the list */
+        D("No node given!");
+        if (unlikely(isLargeElement(sz))) {
+            __quicklistInsertPlainNode(quicklist, quicklist->tail, value, sz, after);
+            return;
+        }
+        new_node = quicklistCreateNode(); // 如果entry所在quicklistNode不存在，就新建节点，把自己当作新quicklistNode第一个节点
+        new_node->entry = lpPrepend(lpNew(0), value, sz); // 把value放入listpack
+        __quicklistInsertNode(quicklist, NULL, new_node, after); // 把new_node加入quicklist
+        new_node->count++;
+        quicklist->count++;
+        return;
+    }
+    // 如果存在quicklistNode
+    /* Populate accounting flags for easier boolean checks later */
+    if (!_quicklistNodeAllowInsert(node, fill, sz)) { // 当前quicklistNode已经满了，不允许插入，fill控制再能加入值的大小
+        D("Current node is full with count %d with requested fill %d",
+          node->count, fill);
+        full = 1; // 当前quicklistNode节点已经不能插入了，方便找下一个节点
+    }
+
+    // 判断后一个quicklistNode节点是否能够插入
+    if (after && (entry->offset == node->count - 1 || entry->offset == -1)) {
+        D("At Tail of current listpack");
+        at_tail = 1;
+        if (_quicklistNodeAllowInsert(node->next, fill, sz)) {
+            D("Next node is available.");
+            avail_next = 1;
+        }
+    }
+
+    /* Now determine where and how to insert the new element */
+    if (!full && after) {
+        D("Not full, inserting after current position.");
+        quicklistDecompressNodeForUse(node); // 解压quicklistNode，以便插入
+        node->entry = lpInsertString(node->entry, value, sz, entry->zi, LP_AFTER, NULL); // 插入新的value
+        node->count++;
+        quicklistNodeUpdateSz(node);
+        quicklistRecompressOnly(node);
+    } else if (full && at_tail && avail_next && after) {
+        /* If we are: at tail, next has free space, and inserting after:
+         *   - insert entry at head of next node. */
+        D("Full and tail, but next isn't full; inserting next node head");
+        new_node = node->next;
+        quicklistDecompressNodeForUse(new_node);
+        new_node->entry = lpPrepend(new_node->entry, value, sz);
+        new_node->count++;
+        quicklistNodeUpdateSz(new_node);
+        quicklistRecompressOnly(new_node);
+    }
+
+    quicklist->count++;
+
+    /* In any case, we reset iterator to forbid use of iterator after insert.
+     * Notice: iter->current has been compressed in _quicklistInsert(). */
+    resetIterator(iter); 
+}
 ```
+借由List insert操作，大致了解如何插入quicklistNode中listpack，这就与本篇标题*Replace ziplist with listpack in quicklist*完全对上了
+
+其实redis的源码写的非常规范，注释也足够清楚，大家如果有兴趣，最好自己阅读一遍自己感兴趣的源码。
 
 
 
 
 参考资料：
 
-
-1. 3.2版本Release notes[https://raw.githubusercontent.com/antirez/redis/3.2/00-RELEASENOTES](https://raw.githubusercontent.com/antirez/redis/3.2/00-RELEASENOTES)
+1. [3.2版本Release notes](https://raw.githubusercontent.com/antirez/redis/3.2/00-RELEASENOTES)
+2. [listpack设计](https://github.com/antirez/listpack/blob/master/listpack.md)
