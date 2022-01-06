@@ -9,7 +9,7 @@ const options = {
     method: 'POST',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie: 'acw_tc=76b20f6816213390654208282e05f899f33a036802d585676a9dc1bbfd4c7c; JSESSIONID=59023E8525602FC7441224D8A25B1D94; OUTFOX_SEARCH_USER_ID_NCOO=36728864.31397198; Mcc=9C8D40C460D4FF7B7CB0BCD31B48A3E7; Identify=5B4CF142207A97E73F7621DEE241423567D6598716256962DF49DE38486028F993CC785D709E1471',
+        Cookie: 'OUTFOX_SEARCH_USER_ID_NCOO=365594159.8071182; Identify=AAE1399D1B6D7288B64490A9DD58479955C750A8CB3504A4B5D9335575B0B441573DFFB33C6B3463; acw_tc=76b20f6816381125179606287e5cdf3562de9ecff6dc805b072b2b4bedf1f6; radius=101.232.73.202; uudid=cms5c3bc48c-ea65-2c99-9260-1b9140b334bf; JSESSIONID=976AEC5DB82E58AB8D78D90F6D73A53C; Mcc=4F13C1F88FE88E0D7CB0BCD31B48A3E7',
         Host: 'crm.soqi.cn',
         Referer: 'http://crm.soqi.cn/baibao/index.html',
         'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
@@ -25,6 +25,7 @@ const uid = [
 const notPay = "http://crm.soqi.cn/notPayResources/notPayResourcesList.xhtml"
 const newSrc =  "http://crm.soqi.cn/customHome/getNewCustomList.xhtml"
 function postUid(uid) {
+    options.headers["Content-Length"] = 114;
     const req = http.request(newSrc, options, (res) => {
         console.log(`状态码: ${res.statusCode}`);
         console.log(`响应头: ${JSON.stringify(res.headers)}`);
