@@ -5,11 +5,15 @@
 
 package main
 
-import "log"
+import (
+	"context"
+	"log"
+)
 
 func main() {
 	log.Println(reverse([]string{"a", "b", "c", "d", "e"}))
 	log.Println([]byte("ab c"), ' ', 'a', "a")
+	context.Background()
 }
 
 func reverse(arr []string) []string {

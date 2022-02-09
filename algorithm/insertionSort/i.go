@@ -2,14 +2,6 @@ package main
 
 import "log"
 
-
-/* 
-时间复杂度：O(n) O(n^2) O(n^2)
-从尾到头在已排序区间查找插入位置，能达到最好的时间复杂度。
-空间复杂度：O(1)
-稳定
-*/
-
 func main() {
 	log.Println(InsertSort([]int{2, 4, 6, 5, 3, 1, 100}))
 }

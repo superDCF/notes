@@ -4,7 +4,11 @@
 
 package main
 
-import "log"
+import (
+	"context"
+	"log"
+	"sync"
+)
 
 func main() {
 	n6 := &node{6, nil}
@@ -14,6 +18,7 @@ func main() {
 	list2 := &node{-6, &node{-5, &node{-4, &node{-3, &node{-2, &node{-1, list}}}}}}
 	log.Println(entry(list))
 	log.Println(entry(list2))
+	context.Background()
 }
 
 type node struct {
