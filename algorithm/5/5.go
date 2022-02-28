@@ -5,8 +5,9 @@ import "log"
 func main() {
 	// longestPalindrome("ada")
 	// longestPalindrome("bda")
+	log.Println(longestPalindrome("cbbd"))
 	log.Println(longestPalindrome("ababa"))
-	log.Println(povit("ababa"))
+	// log.Println(povit("ababa"))
 }
 
 /*
@@ -20,6 +21,15 @@ i
 2				1	0	1
 3					1	0
 4						1
+
+
+cbbd
+	j	0	1	2	3
+i
+0		1	0	0	0
+1			1	1	0
+2				1	0
+3					1
 
 1. dp[i][j]：确定dp数组及i，j的表达，判断i到j区间是否是回文子字符串
 2. 确定递推公式
@@ -38,14 +48,14 @@ func longestPalindrome(s string) string {
 	log.Println(dp)
 	maxLen := 0
 	left, right := 0, 0                // 表示至少有一个长度为1的
-	for i := len(s) - 1; i >= 0; i-- { // 遍历二维数组
+	for i := len(s) - 1; i >= 0; i-- { // 遍历二维数组··
 		for j := i; j < len(s); j++ {
 			if s[i] != s[j] {
 				dp[i][j] = 0
 			} else {
-				if i == j {
+				if j-i <= 1 {
 					dp[i][j] = 1
-				} else if dp[i+1][j-1] == 1 {
+				} else if j-i > 1 && dp[i+1][j-1] == 1 {
 					dp[i][j] = 1
 				}
 				if dp[i][j] == 1 && j-i+1 > maxLen { // 因为这里每次都是计算当前区间的i,j，所以可以直接计算maxLen
