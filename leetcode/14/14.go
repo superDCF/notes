@@ -6,15 +6,18 @@
 
 package main
 
-import "log"
+import (
+	"log"
+	"strings"
+)
 
 func main() {
 	s := "abcd"
 	log.Println(s[:4])
-	log.Println(longestCommonPrefix2([]string{"flower", "flow", "flight"}))
-	log.Println(longestCommonPrefix2([]string{"flower", "flower", "flower", "flower"}))
-	log.Println(longestCommonPrefix2([]string{"dog", "racecar", "car"}))
-	log.Println(longestCommonPrefix2([]string{"ab", "a"}))
+	log.Println(longestCommonPrefix4([]string{"flower", "flow", "flight"}))
+	log.Println(longestCommonPrefix4([]string{"flower", "flower", "flower", "flower"}))
+	log.Println(longestCommonPrefix4([]string{"dog", "racecar", "car"}))
+	log.Println(longestCommonPrefix4([]string{"ab", "a"}))
 }
 
 func longestCommonPrefix(strs []string) string {
@@ -53,9 +56,6 @@ func longestCommonPrefix2(strs []string) string {
 	if len(strs) == 0 {
 		return ""
 	}
-	if len(strs) == 1 {
-		return strs[0]
-	}
 
 	minLenIndex := 0
 	for i := 1; i < len(strs); i++ {
@@ -72,6 +72,50 @@ func longestCommonPrefix2(strs []string) string {
 		for i := 0; i < len(strs); i++ {
 			if i == minLenIndex {
 				continue
+			}
+			if strs[i][lenth] != char {
+				return strs[minLenIndex][:lenth]
+			}
+		}
+	}
+	return strs[minLenIndex][:lenth]
+}
+
+func longestCommonPrefix3(strs []string) string {
+	if len(strs) == 0 {
+		return ""
+	}
+	prefix := strs[0]
+	for i := 1; i < len(strs); i++ {
+		for !strings.HasPrefix(strs[i], prefix) {
+			if prefix != "" {
+				prefix = prefix[:len(prefix)-1]
+			} else {
+				return ""
+			}
+		}
+	}
+	return prefix
+}
+
+func longestCommonPrefix4(strs []string) string {
+	if len(strs) == 0 {
+		return ""
+	}
+
+	minLenIndex := 0
+	if strs[minLenIndex] == "" {
+		return ""
+	}
+	lenth := 0
+	for ; lenth < len(strs[minLenIndex]); lenth++ {
+		char := strs[minLenIndex][lenth]
+		for i := 0; i < len(strs); i++ {
+			if i == minLenIndex {
+				continue
+			}
+			if len(strs[i])-1 < lenth {
+				return strs[minLenIndex][:lenth]
 			}
 			if strs[i][lenth] != char {
 				return strs[minLenIndex][:lenth]
