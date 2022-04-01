@@ -29,17 +29,17 @@ func isValid(s string) bool {
 	}
 	var stack []byte
 	for i := 0; i < len(s); i++ {
-		if s[i] != '[' && s[i] != '{' && s[i] != '(' {
-			if len(stack) == 0 {
-				return false
-			}
-			if stack[len(stack)-1] != table[s[i]] {
-				return false
-			} else {
-				stack = stack[:len(stack)-1]
-			}
+		if s[i] == '[' {
+			stack = append(stack, ']')
+		} else if s[i] == '{' {
+			stack = append(stack, '}')
+		} else if s[i] == '(' {
+			stack = append(stack, ')')
 		} else {
-			stack = append(stack, s[i])
+			if len(stack) == 0 || stack[len(stack)-1] != s[i] {
+				return false
+			}
+			stack = stack[:len(stack)-1]
 		}
 	}
 	if len(stack) != 0 {
