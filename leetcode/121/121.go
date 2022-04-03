@@ -35,13 +35,6 @@ func maxProfit(prices []int) int {
 	return profit
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 // maxProfit2 可以买卖多次
 func maxProfit2(prices []int) int {
 	if len(prices) < 2 {
