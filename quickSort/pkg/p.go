@@ -37,7 +37,7 @@ void quick_sort(int *arr, int l, int r) {
 
 3、partition
 	头尾指针分别找到需要交换的元素，直接交换该元素，而不是找到一个元素就交换；
-	
+
 phony:
 	QuickSort(a){
 		m := povit(a)
@@ -87,4 +87,15 @@ func povit(a []int, left, right int) int {
 	}
 	a[left] = tmp
 	return left
+}
+
+func povit2(a []int, left, right int) int {
+
+	for left < right {
+		// for
+	}
+}
+
+func povit3(a []int, left, right int) int {
+	//  a[left]
 }
