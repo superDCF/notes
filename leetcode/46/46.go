@@ -12,9 +12,10 @@ func main() {
 
 func permute(nums []int) [][]int {
 	numsLen := len(nums)
-	used := make([]bool, numsLen)
 	var ret [][]int
-	backTrace(nums, nil, &ret, used, 0, numsLen)
+	// used := make([]bool, numsLen)
+	// backTrace(nums, nil, &ret, used, 0, numsLen)
+	backTrace1(nums, &ret, 0, numsLen)
 	return ret
 }
 
@@ -35,5 +36,24 @@ func backTrace(nums, out []int, ret *[][]int, used []bool, deep, numsLen int) {
 			out = out[:len(out)-1]
 			// log.Printf("backTrace2 i=%v deep=%v out=%v used=%v", i, deep, out, used)
 		}
+	}
+}
+
+func backTrace1(nums []int, ret *[][]int, deep, numsLen int) {
+	if deep == numsLen {
+		_out := append([]int{}, nums...)
+		*ret = append(*ret, _out)
+		return
+	}
+	for i := deep; i < numsLen; i++ {
+		// if i != deep {
+		log.Printf("backTrace1 deep=%v i=%v nums=%v", deep, i, nums)
+		nums[i], nums[deep] = nums[deep], nums[i]
+		// }
+		backTrace1(nums, ret, deep+1, numsLen)
+		// if i != deep {
+		log.Printf("backTrace2 deep=%v i=%v nums=%v", deep, i, nums)
+		nums[i], nums[deep] = nums[deep], nums[i]
+		// }
 	}
 }
