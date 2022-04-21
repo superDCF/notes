@@ -41,19 +41,11 @@ func reverseList(head *ListNode) *ListNode {
 }
 
 func reverseList2(head *ListNode) *ListNode {
-	if head == nil {
-		return nil
+	if head == nil || head.Next == nil {
+		return head
 	}
-
-	return reverse(head, nil)
-}
-
-func reverse(cur, pre *ListNode) *ListNode {
-	if cur == nil {
-		return pre
-	}
-	tmp := cur.Next
-	cur.Next = pre
-	reverse(tmp, cur)
-	return cur
+	newHead := reverseList2(head.Next)
+	head.Next.Next = head
+	head.Next = nil
+	return newHead
 }
