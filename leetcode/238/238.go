@@ -13,7 +13,7 @@ import "log"
 */
 
 func main() {
-	log.Println(productExceptSelf([]int{-1, 1, 0, -3, 3}))
+	log.Println(productExceptSelf2([]int{1, 2, 3, 4}))
 }
 
 func productExceptSelf(nums []int) []int {
@@ -42,4 +42,27 @@ func productExceptSelf(nums []int) []int {
 		}
 	}
 	return ret
+}
+
+func productExceptSelf2(nums []int) []int {
+	numsLen := len(nums)
+	ans := make([]int, numsLen)
+	left := 1 // 左边的积
+	right := 1
+	for i := 0; i < numsLen; i++ {
+		if i >= numsLen/2 {
+			if numsLen-1-i == i {
+				ans[i] = left * right
+			} else {
+				ans[i] = left * ans[i]
+				ans[numsLen-1-i] = right * ans[numsLen-1-i]
+			}
+		} else {
+			ans[i] = left
+			ans[numsLen-1-i] = right
+		}
+		left *= nums[i]
+		right *= nums[numsLen-1-i]
+	}
+	return ans
 }
