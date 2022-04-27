@@ -57,13 +57,14 @@ func coinChange(coins []int, amount int) int {
 			}
 		}
 	}
+	if dp[amount-1] == math.MaxInt {
+		return -1
+	}
 	return dp[amount-1]
 }
 
 func min(a, b int) int {
-	if b < 0 {
-		return a
-	}
+
 	if a > b {
 		return b
 	}
