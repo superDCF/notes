@@ -68,23 +68,22 @@ type TreeNode struct {
 	Left  *TreeNode
 	Right *TreeNode
 }
-
-var maxN = 0
-
 func diameterOfBinaryTree(root *TreeNode) int {
-	calcNode(root)
+    var maxN = 0
+	calcNode(root,&maxN)
 	return maxN
 }
 
-func calcNode(root *TreeNode) int {
+func calcNode(root *TreeNode,maxN *int) int {
 	if root == nil {
 		return 0
 	}
-	ln := calcNode(root.Left)
-	rn := calcNode(root.Right)
-	log.Println(root.Val, ln, rn)
-	if ln+rn > maxN {
-		maxN = ln + rn
+	ln := calcNode(root.Left,maxN)
+
+	rn := calcNode(root.Right,maxN)
+	// log.Println(root.Val, ln, rn)
+	if ln+rn > *maxN {
+		*maxN = ln + rn
 	}
 	if ln > rn {
 		return ln + 1
